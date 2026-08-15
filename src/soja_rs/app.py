@@ -207,5 +207,11 @@ def main():
             )
             st.plotly_chart(fig_hist, use_container_width=True)
 
+    st.divider()
+    st.caption(
+        "Feito por [Christian Domingues Sanchez](https://github.com/SerjaoSanchez) · "
+        "[código no GitHub](https://github.com/SerjaoSanchez/previsao-safra-soja-rs)"
+    )
+
 
 main()
