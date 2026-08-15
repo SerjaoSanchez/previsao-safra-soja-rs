@@ -1,0 +1,185 @@
+Isso muda bastante o quadro — e para melhor. Bioinformática é ciência de dados, só que com vocabulário de biologia. Você provavelmente já tem: Python e/ou R em nível de trabalho real, estatística de verdade (inclusive multivariada, modelos mistos, correção de múltiplos testes), dados enormes e sujos, linha de comando, versionamento, e possivelmente Snakemake ou Nextflow — que é orquestração de pipeline, exatamente o que Airflow faz no mundo corporativo.
+
+O risco no seu caso não é falta de competência técnica. É tradução: um recrutador de RH lê "análise de expressão diferencial em RNA-seq de Solanum" e não consegue mapear para a vaga. Seu portfólio precisa resolver esse problema de legenda.
+
+As lacunas reais
+
+Quase todo bioinformata que migra tem os mesmos três buracos:
+
+SQL. É o maior. Bioinformática vive de arquivos (FASTA, VCF, TSV) e dataframes, raramente de banco relacional. Em vaga de dados, SQL é o teste eliminatório. Prioridade número um: window functions, CTEs, joins complexos, modelagem dimensional básica. Duas a três semanas de prática séria resolvem.
+
+Enquadramento de negócio. Você foi treinado a reportar incerteza e limitações antes da conclusão. A indústria quer o inverso: recomendação primeiro, ressalva depois. Isso é hábito, não conhecimento — mas precisa aparecer explicitamente nos seus READMEs.
+
+Camada de apresentação. Power BI ou Looker Studio, dashboard publicado, coisa clicável. Figura de artigo em ggplot não substitui.
+
+O que você não precisa fazer: mais um projeto provando que sabe pandas. Isso você já provou por seis anos.
+
+Projetos que eu faria no seu lugar
+
+1. Uma análise da tese, reembalada como produto.
+Mesmo dado, entrega completamente diferente: repositório limpo, ambiente reprodutível (Docker ou conda + make), testes, e um README que abre com "o que isso significa" em linguagem de leigo. É o projeto de maior retorno por hora porque o trabalho analítico já está feito e ele demonstra justamente a transição que o empregador está avaliando.
+
+2. Previsão de safra com dados públicos brasileiros.
+Esse é o projeto que eu colocaria no topo do portfólio. Combine CONAB (safras), IBGE/PAM e LSPA (produção municipal), INMET (clima diário por estação) e, se quiser subir o nível, NDVI de satélite via Google Earth Engine ou MODIS. Pergunta: dá para prever produtividade municipal de arroz ou soja no RS a partir de clima acumulado em janelas fenológicas?
+
+Por que funciona tão bem: você entende fenologia de verdade — sabe que estresse hídrico no enchimento de grão pesa mais que a chuva total do ciclo. Um cientista de dados genérico joga tudo num XGBoost. Sua feature engineering vai ser visivelmente melhor, e isso aparece no resultado. Além disso, o projeto fala diretamente com o mercado que mais contrata perto de você.
+
+3. Um projeto deliberadamente fora da biologia.
+Churn, funil de vendas, análise de coorte, precificação — algo com vocabulário comercial puro. A função dele é única: impedir que o recrutador te classifique como "só serve para pesquisa acadêmica". Não precisa ser complexo, precisa ser em SQL + dashboard e falar de receita, retenção, custo.
+
+4. Um pacote publicado (opcional, alto retorno).
+Se você tem algum script utilitário da tese, transforme em pacote instalável no PyPI (ou Bioconductor) com testes, CI e documentação. Isso prova engenharia de software, que é o que separa "sabe analisar" de "sabe entregar" — e é raro no perfil acadêmico.
+
+Sobre o mercado, especificamente
+
+Você está em Pelotas: Embrapa Clima Temperado fica aí, e o RS concentra melhoramento e sementes. Empresas que contratam esse perfil: Bayer/Monsanto, Corteva, Syngenta, BASF, TMG, GDM, Longping High-Tech, além de agtechs como Solinftec, Agrosmart e Nutrien. Vale procurar por termos como breeding data scientist, analista de dados agronômicos, bioinformata, pesquisa e desenvolvimento — análise de dados.
+
+O ponto importante: essas vagas frequentemente não são júnior. Empresa de melhoramento que precisa de alguém para analisar dados de genotipagem e ensaios multiambientais vai olhar um doutor em bioinformática vegetal como candidato pleno, com salário correspondente. Candidatar-se só a vagas de entrada pode custar caro. Sugiro dividir as candidaturas: júnior genérico em tecnologia como piso de segurança, e pleno em agtech/biotech como alvo real.
+
+Há também o mercado de bioinformática puro (Dasa, Mendelics, Varsomics, hospitais de referência, além de contratos remotos no exterior), onde seu doutorado é qualificação direta e não algo a ser reciclado.
+
+Quanto ao QA
+
+Com esse perfil, QA seria subutilização clara — a diferença salarial em relação a um cargo analítico com seu domínio é grande. A única versão que faria sentido é qualidade de dados dentro de um time de dados (Great Expectations, dbt tests, validação de pipeline), e mesmo assim como componente de um projeto de dados, não como trilha principal. Eu tiraria QA da lista.
+
+Se for começar hoje, começaria por SQL em paralelo ao projeto 2, porque é o item que trava entrevista independentemente da vaga.
+
+Como começar o passo a passo do projeto ... Previsão de safra com dados públicos brasileiros. Passo a passo, tópicos, checklist, qualquer coisa que possa me ajudar a começar.
+
+Arquitetou plano estruturado integrando dados climáticos, fenologia agrícola e validação temporal
+
+Vou te dar o plano completo, mas antes uma decisão que economiza semanas: feche o escopo antes de escrever a primeira linha de código. O erro clássico nesse projeto é começar baixando tudo e virar uma exploração infinita.
+
+Escopo que eu recomendo:
+
+Prever o rendimento médio (kg/ha) de soja por município do Rio Grande do Sul, para o ano-safra seguinte, usando apenas informação climática disponível até 31 de janeiro.
+
+Por que essas escolhas:
+
+Soja, não arroz. Soja no RS é de sequeiro, então o clima explica muito da variação. Arroz gaúcho é irrigado — o sinal de estresse hídrico some, e o projeto perde a narrativa.
+RS. Você conhece a região, é o estado com maior variância interanual do Brasil (secas de La Niña), e isso dá história para contar.
+Município-ano. Grão fino o bastante para ter ~450 unidades × 20 anos ≈ 9.000 linhas — suficiente para modelar, pequeno o bastante para rodar no notebook.
+Corte em 31 de janeiro. Isso transforma o trabalho em previsão de verdade, não em explicação retrospectiva. É a diferença que separa portfólio de exercício.
+Fase 0 — Fundação (2 dias)
+ Criar repositório com README.md já contendo a pergunta acima escrita por extenso
+ pyproject.toml ou environment.yml, .gitignore, ruff configurado
+ Estrutura de pastas: data/raw/, data/interim/, data/processed/, src/, notebooks/, tests/, reports/
+ data/ inteiro no .gitignore — dado bruto não vai para o Git
+ Makefile com alvos data, features, train, app
+ Commit inicial
+
+Regra que vale para todo o projeto: notebook é rascunho, src/ é o produto. Explorou no notebook, funcionou, move para função testada em src/.
+
+Fase 1 — Dados (4 a 6 dias)
+Alvo: produtividade municipal
+
+A fonte é a PAM/IBGE, tabela 5457 (área plantada, área colhida, quantidade produzida, rendimento médio e valor da produção), acessível via SIDRA. A tabela cobre municípios e a série vai de 1974 até 2024. 
+Quantilica
+IBGE
+
+Duas rotas de acesso:
+
+API do SIDRA (apisidra.ibge.gov.br) — monte a URL com tabela 5457, nível territorial de município, filtrando UF 43 (RS), variável de rendimento médio, produto soja. Vantagem: reprodutível, é código.
+Base dos Dados — a PAM já está tratada lá e consultável por SQL no BigQuery. Mais rápido, e te dá SQL no portfólio de graça.
+
+Faça pela API do SIDRA e deixe o Base dos Dados como plano B; escrever o coletor é parte do que você quer mostrar.
+
+Cuidado importante: a CONAB também tem série histórica de safras, disponível no portal de séries históricas e no Portal de Informações Agropecuárias — mas ela é estadual, não municipal. Use como camada de validação e contexto ("meu agregado estadual bate com a CONAB?"), nunca como alvo. 
+Conab
+Conab
+
+Clima
+
+Aqui está a decisão técnica que mais impacta o resultado. Duas opções:
+
+INMET. O BDMEP tem séries históricas diárias das estações convencionais, e há também o mapa de estações e a tabela de dados das automáticas. Problema: os dados das automáticas são brutos e não passam por processo de consistência, a rede é esparsa, e você vai gastar dias resolvendo "qual estação representa este município" e imputando buracos. 
+Instituto Nacional de Meteorologia + 2
+
+NASA POWER. API pública, sem cadastro, dados diários em grade desde 1981, por latitude/longitude. Você pega o centroide de cada município (malha do IBGE) e baixa a série direto. Variáveis: T2M_MAX, T2M_MIN, PRECTOTCORR, ALLSKY_SFC_SW_DWN, RH2M.
+
+Comece pelo NASA POWER. Cobertura completa, sem lacunas, um município = uma chamada. Depois, se sobrar tempo, use o INMET para validar contra estações reais — isso vira uma seção ótima do README ("comparei a grade com 12 estações do INMET; viés médio de X mm").
+
+ENSO — a variável que quase ninguém usa
+
+Baixe o índice ONI (Oceanic Niño Index, da NOAA). No RS, La Niña significa primavera-verão seco e quebra de safra — 2004/05, 2011/12, 2021/22 e 2022/23 estão todas aí. Um índice ONI defasado é uma feature disponível antes do plantio, o que é ouro para previsão. É provavelmente a feature mais valiosa do projeto e a mais fácil de justificar em entrevista.
+
+Checklist da fase
+ Coletor da PAM parametrizado (UF, cultura, anos) salvando em data/raw/
+ Malha municipal do RS + centroides
+ Coletor NASA POWER com cache local (não rebaixar o que já baixou) e time.sleep entre chamadas
+ Série ONI mensal
+ Tudo carregado em DuckDB — banco em arquivo único, SQL de verdade, zero infraestrutura
+ Notebook de sanidade: quantos municípios por ano? quantos NA? o total estadual bate com a CONAB?
+
+Atenção a duas armadilhas de dado brasileiro: códigos IBGE de 7 dígitos (nunca use nome de município como chave) e municípios com área colhida pequena, cujo rendimento é ruidoso — filtre algo como área colhida ≥ 500 ha.
+
+Fase 2 — Features (3 a 4 dias)
+
+Este é o coração do projeto e onde sua formação aparece. Um cientista de dados genérico calcula chuva total do ano e joga no XGBoost. Você sabe que não é assim.
+
+Defina janelas fenológicas para soja no RS (calendário aproximado, documente no README):
+
+Janela	Período	O que importa
+Semeadura/emergência	nov	chuva para estabelecimento
+Vegetativo	dez	GDD acumulado
+Floração (R1–R2)	jan	estresse térmico e hídrico
+Enchimento de grão (R5–R6)	jan–fev	fase mais crítica
+
+Como o corte é 31 de janeiro, o enchimento fica parcialmente fora — trate isso explicitamente: use o observado até janeiro e a climatologia/ONI como proxy do que vem. Essa honestidade metodológica é exatamente o que impressiona.
+
+Features a construir por município-ano:
+
+Graus-dia acumulados (base 10 °C) por janela
+Precipitação acumulada por janela
+Maior sequência de dias consecutivos com chuva < 1 mm dentro da janela crítica
+Número de dias com Tmax > 32 °C durante a floração
+Radiação solar acumulada no período reprodutivo
+Anomalia de precipitação vs. normal climatológica de 30 anos do próprio município (padroniza entre regiões)
+Balanço hídrico simplificado (P − ET0, com ET0 por Hargreaves)
+ONI médio de setembro–novembro (defasado, disponível antes do plantio)
+Ano como variável contínua, capturando ganho genético e tecnológico (~1–2 % a.a.)
+Rendimento médio histórico do município (efeito de solo/aptidão)
+ Cada feature é uma função testada em src/features.py
+ pytest com casos sintéticos: série de 30 dias sem chuva devolve sequência seca = 30
+Fase 3 — Modelagem (3 dias)
+
+Baselines obrigatórios, nesta ordem:
+
+Média histórica do município
+Média do município + tendência linear temporal
+Ridge sobre as features
+LightGBM
+
+Se o LightGBM não bater o baseline 2 com folga, o projeto ainda não tem resultado — e reportar isso com honestidade é melhor do que maquiar.
+
+Validação: nunca K-fold aleatório. Ano é a unidade de dependência. Use leave-one-year-out ou, melhor ainda, validação temporal expansiva: treina até 2015 → testa 2016; treina até 2016 → testa 2017; e assim por diante. K-fold aleatório aqui vaza informação do mesmo ano entre treino e teste e infla tudo.
+
+Cuidado com a métrica. R² global sobe sozinho porque municípios diferem estruturalmente entre si. Reporte também o R² dentro de cada ano e o RMSE comparado ao baseline — é o único número que diz se você previu a anomalia, que é o que interessa a quem compra seguro agrícola ou trava preço.
+
+ Interpretabilidade: SHAP ou importância por permutação. Verifique se as features que o modelo elegeu fazem sentido agronômico — se não fizerem, provavelmente há vazamento
+ Analise os piores erros. Que anos o modelo perdeu? Se errou 2022/23, tem uma discussão excelente sobre seca extrema fora da distribuição de treino
+Fase 4 — Entrega (4 a 5 dias)
+
+Esta fase costuma ser cortada por falta de tempo e é justamente a que decide se alguém vai olhar o projeto.
+
+ App Streamlit publicado no Streamlit Cloud: mapa coroplético do RS com previsão por município, seletor de ano, e um painel comparando previsto vs. observado
+ README com o resultado no topo — um mapa e uma frase do tipo "erro mediano de X kg/ha, 22 % melhor que o baseline histórico"
+ docker run ou make all reproduz tudo do zero
+ GitHub Actions rodando testes a cada push (badge verde no README)
+ Seção "Limitações" curta e honesta
+ Post no LinkedIn de 4 parágrafos explicando o projeto para leigos
+Cronograma condensado
+Semana	Entrega
+1	Repositório + dados coletados em DuckDB + notebook de sanidade
+2	Features fenológicas testadas + baselines + primeiro modelo
+3	Validação temporal + interpretabilidade + Streamlit publicado + README
+
+Três semanas em ritmo de doutorando com tempo parcial. Se estourar, corte features — nunca corte a fase 4.
+
+Duas coisas para não esquecer
+
+Escreva o README antes de terminar o modelo. Redigir a pergunta e a conclusão pretendida força escopo fechado e evita a espiral de "só mais uma variável".
+
+Registre no README o que você tentou e não funcionou. Vazamento que você pegou, feature que parecia boa e não era, estação do INMET com série quebrada. Isso é o que distingue um portfólio de alguém que pesquisa de verdade — e é onde seu doutorado fala mais alto do que qualquer bootcamp.
+
+Se quiser, posso montar isso como um arquivo markdown de checklist para você marcar conforme avança, ou escrever o coletor da API do SIDRA para você já começar rodando.

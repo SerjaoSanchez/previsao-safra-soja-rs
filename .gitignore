@@ -1,0 +1,29 @@
+# Dados (bruto e derivado nunca vão para o git)
+data/
+*.duckdb
+*.duckdb.wal
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.env
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Ferramentas
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Relatórios gerados (mantenha só o que for para publicar versionado à parte)
+reports/*.html
+
+# SO / editor
+.DS_Store
+.vscode/
