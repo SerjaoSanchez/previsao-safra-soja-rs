@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/SerjaoSanchez/previsao-safra-soja-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/SerjaoSanchez/previsao-safra-soja-rs/actions/workflows/ci.yml)
 
+**App publicado:** [previsao-soja-rs.streamlit.app](https://previsao-soja-rs.streamlit.app/)
+
 **Pergunta do projeto:** dá para prever o rendimento médio (kg/ha) de soja por
 município do Rio Grande do Sul, para o ano-safra seguinte, usando apenas
 informação climática disponível até 31 de janeiro?
@@ -99,6 +101,9 @@ continua fora do git.
 ## Deploy
 
 Publicado no [Streamlit Community Cloud](https://streamlit.io/cloud):
+[previsao-soja-rs.streamlit.app](https://previsao-soja-rs.streamlit.app/).
+
+Passo a passo para publicar uma cópia:
 
 1. Entre em [share.streamlit.io](https://share.streamlit.io) com sua conta
    GitHub.
