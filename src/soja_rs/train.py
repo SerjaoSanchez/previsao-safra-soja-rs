@@ -227,10 +227,28 @@ def importancia_shap(modelo, df: pd.DataFrame, feature_cols: list[str] = FEATURE
     return importancia.sort_values(ascending=False)
 
 
+def exportar_app_data(
+    previsoes: pd.DataFrame, metricas: pd.DataFrame, nomes: pd.DataFrame, app_db_path
+) -> None:
+    """Grava um DuckDB enxuto só com o que o app Streamlit precisa.
+
+    Separado do soja_rs.duckdb principal (que tem clima_diario, ~8M linhas)
+    porque este arquivo é versionado no git para o app subir pronto no
+    Streamlit Cloud sem repetir a coleta/treino.
+    """
+    import duckdb
+
+    app_db_path.parent.mkdir(parents=True, exist_ok=True)
+    with duckdb.connect(str(app_db_path)) as con:
+        con.execute("CREATE OR REPLACE TABLE validacao_previsoes AS SELECT * FROM previsoes")
+        con.execute("CREATE OR REPLACE TABLE validacao_metricas AS SELECT * FROM metricas")
+        con.execute("CREATE OR REPLACE TABLE municipio_nomes AS SELECT * FROM nomes")
+
+
 def main() -> None:
     import duckdb
 
-    from soja_rs.data import DUCKDB_PATH
+    from soja_rs.data import APP_DB_PATH, DUCKDB_PATH
 
     with duckdb.connect(str(DUCKDB_PATH)) as con:
         features = con.execute("SELECT * FROM features").df()
@@ -246,6 +264,9 @@ def main() -> None:
     with duckdb.connect(str(DUCKDB_PATH)) as con:
         con.execute("CREATE OR REPLACE TABLE validacao_metricas AS SELECT * FROM metricas")
         con.execute("CREATE OR REPLACE TABLE validacao_previsoes AS SELECT * FROM previsoes")
+        nomes = con.execute("SELECT DISTINCT municipio_id, municipio_nome FROM pam_soja_rs").df()
+
+    exportar_app_data(previsoes, metricas, nomes, APP_DB_PATH)
 
     modelo_final = ajustar_lightgbm(df)
     print("\nImportância SHAP (modelo final, treinado em todos os dados):")

@@ -1,0 +1,5 @@
+# Usado pelo Streamlit Community Cloud para montar o ambiente do deploy.
+# "-e ." instala o pacote soja_rs em modo editável, puxando as
+# dependências declaradas em pyproject.toml — mesma fonte de verdade
+# usada em "make setup" para desenvolvimento local.
+-e .

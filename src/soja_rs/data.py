@@ -37,6 +37,12 @@ PROCESSED_DIR = Path("data/processed")
 
 DUCKDB_PATH = PROCESSED_DIR / "soja_rs.duckdb"
 
+# Banco enxuto só com o que o app Streamlit lê (validacao_previsoes/
+# validacao_metricas). soja_rs.duckdb tem clima_diario (~8M linhas) e não
+# vai para o git por ser grande demais; app_data.duckdb é a única exceção
+# versionada, para o app subir pronto sem repetir a coleta/treino.
+APP_DB_PATH = PROCESSED_DIR / "app_data.duckdb"
+
 # API de agregados do IBGE (mesmo backend de dados do SIDRA clássico,
 # apisidra.ibge.gov.br, mas com JSON mais limpo e IDs de município nativos).
 IBGE_AGREGADOS_URL = "https://servicodados.ibge.gov.br/api/v3/agregados"

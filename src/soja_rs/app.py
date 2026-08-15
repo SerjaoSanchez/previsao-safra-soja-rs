@@ -5,9 +5,15 @@ ano-safra e busca por município (com destaque no mapa e histórico
 previsto vs. observado), painel previsto vs. observado e evolução do erro
 por ano.
 
-Rode com ``make app`` ou ``streamlit run src/soja_rs/app.py``. Depende das
-tabelas ``validacao_previsoes``/``validacao_metricas`` no DuckDB — rode
-``make train`` antes se elas ainda não existirem.
+Lê de ``data/processed/app_data.duckdb``, um banco enxuto (só as tabelas
+``validacao_previsoes``/``validacao_metricas``/``municipio_nomes``) gerado
+por ``exportar_app_data()`` em ``soja_rs.train`` — versionado no git à
+parte do ``soja_rs.duckdb`` principal, que tem a série de clima diário
+(~8M linhas) e é grande demais para o repositório.
+
+Rode com ``make app`` ou ``streamlit run src/soja_rs/app.py``. Rode
+``make train`` antes se ``data/processed/app_data.duckdb`` ainda não
+existir.
 """
 
 import json
@@ -17,7 +23,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from soja_rs.data import DUCKDB_PATH, RAW_DIR
+from soja_rs.data import APP_DB_PATH, RAW_DIR
 
 st.set_page_config(page_title="Previsão de safra de soja — RS", layout="wide")
 
@@ -28,13 +34,12 @@ COR_DESTAQUE = "#e63946"
 
 @st.cache_data
 def carregar_dados():
-    with duckdb.connect(str(DUCKDB_PATH), read_only=True) as con:
-        tabelas = {r[0] for r in con.execute("SHOW TABLES").fetchall()}
-        if "validacao_previsoes" not in tabelas:
-            return None, None, None, None
+    if not APP_DB_PATH.exists():
+        return None, None, None, None
+    with duckdb.connect(str(APP_DB_PATH), read_only=True) as con:
         previsoes = con.execute("SELECT * FROM validacao_previsoes").df()
         metricas = con.execute("SELECT * FROM validacao_metricas").df()
-        nomes = con.execute("SELECT DISTINCT municipio_id, municipio_nome FROM pam_soja_rs").df()
+        nomes = con.execute("SELECT * FROM municipio_nomes").df()
     with open(GEOJSON_PATH) as f:
         malha = json.load(f)
     return previsoes, metricas, malha, nomes
