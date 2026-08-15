@@ -1,5 +1,7 @@
 # Previsão de safra de soja no RS
 
+[![CI](https://github.com/SerjaoSanchez/previsao-safra-soja-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/SerjaoSanchez/previsao-safra-soja-rs/actions/workflows/ci.yml)
+
 **Pergunta do projeto:** dá para prever o rendimento médio (kg/ha) de soja por
 município do Rio Grande do Sul, para o ano-safra seguinte, usando apenas
 informação climática disponível até 31 de janeiro?
@@ -86,6 +88,24 @@ make features  # gera as features fenológicas
 make train     # treina e valida os modelos (baselines + LightGBM)
 make app       # roda o app Streamlit localmente
 ```
+
+O app também roda sem repetir a coleta/treino: `data/processed/soja_rs.duckdb`
+(resultado já processado) e `data/raw/malha/rs_43_municipios.geojson` (malha
+municipal) são as duas únicas exceções versionadas dentro de `data/`, só
+para o app subir pronto (local ou no Streamlit Cloud) sem esperar os ~30 min
+da coleta da NASA POWER. O resto de `data/` (dado bruto, cache das APIs)
+continua fora do git.
+
+## Deploy
+
+Publicado no [Streamlit Community Cloud](https://streamlit.io/cloud):
+
+1. Entre em [share.streamlit.io](https://share.streamlit.io) com sua conta
+   GitHub.
+2. "New app" → selecione este repositório, branch `main`.
+3. Main file path: `src/soja_rs/app.py`.
+4. Deploy. As dependências vêm de `requirements.txt` (que instala o pacote
+   via `pyproject.toml`).
 
 ## Roadmap
 

@@ -1,7 +1,21 @@
-# Dados (bruto e derivado nunca vão para o git)
-data/
+# Dados (bruto e derivado nunca vão para o git). Usa "data/*", não
+# "data/", porque um padrão de diretório puro impede o git de descer e
+# aplicar as exceções abaixo (ver seção seguinte).
+data/*
 *.duckdb
 *.duckdb.wal
+
+# Exceções: artefatos pequenos e já processados, exigidos pelo app em
+# tempo de execução (Streamlit Cloud clona o repo do zero e não roda a
+# coleta de novo). Dado público (clima/agricultura), sem nada sensível.
+!data/processed/
+data/processed/*
+!data/processed/soja_rs.duckdb
+!data/raw/
+data/raw/*
+!data/raw/malha/
+data/raw/malha/*
+!data/raw/malha/rs_43_municipios.geojson
 
 # Python
 __pycache__/
