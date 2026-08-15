@@ -69,19 +69,21 @@ def main():
     col_mapa, col_dispersao = st.columns([3, 2])
 
     with col_mapa:
-        fig_mapa = px.choropleth_mapbox(
+        # px.choropleth (SVG/D3), não choropleth_mapbox: não depende de
+        # WebGL nem de tiles externos — mais robusto e mais alinhado com a
+        # reprodutibilidade offline do resto do projeto.
+        fig_mapa = px.choropleth(
             sub,
             geojson=malha,
             locations="municipio_id",
             featureidkey="properties.codarea",
             color="y_pred",
             color_continuous_scale="YlGn",
-            mapbox_style="carto-positron",
-            zoom=5.3,
-            center={"lat": -29.5, "lon": -53.0},
-            opacity=0.85,
+            scope="south america",
+            fitbounds="locations",
             labels={"y_pred": "Previsto (kg/ha)"},
         )
+        fig_mapa.update_geos(visible=False)
         fig_mapa.update_layout(margin={"l": 0, "r": 0, "t": 0, "b": 0}, height=550)
         st.plotly_chart(fig_mapa, use_container_width=True)
 

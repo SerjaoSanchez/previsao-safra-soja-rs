@@ -42,13 +42,20 @@ def montar_dataset(
 ) -> pd.DataFrame:
     """Junta as features com o alvo (rendimento observado).
 
-    Descarta município-anos sem histórico suficiente (1º ano de cada
-    município, sem ``rendimento_medio_historico_kg_ha``) e os de área
-    colhida pequena, cujo rendimento é ruidoso (ver base.txt, Fase 1).
+    Descarta município-anos sem histórico suficiente: os primeiros anos de
+    cada município ainda não têm ``rendimento_medio_historico_kg_ha`` nem
+    ``anomalia_precip_reprodutivo_mm`` (a normal climatológica trailing
+    exige pelo menos 5 anos anteriores — ver build_features). Também
+    descarta área colhida pequena, cujo rendimento é ruidoso (Fase 1).
     """
     alvo = pam[["municipio_id", "ano", TARGET_COL, "area_colhida_ha"]]
     df = features.merge(alvo, on=["municipio_id", "ano"], how="inner")
-    df = df.dropna(subset=[TARGET_COL, "rendimento_medio_historico_kg_ha"])
+    colunas_obrigatorias = [
+        TARGET_COL,
+        "rendimento_medio_historico_kg_ha",
+        "anomalia_precip_reprodutivo_mm",
+    ]
+    df = df.dropna(subset=colunas_obrigatorias)
     df = df[df["area_colhida_ha"] >= area_minima_ha]
     return df.reset_index(drop=True)
 
@@ -99,11 +106,19 @@ def prever_ridge(
 def ajustar_lightgbm(df_treino: pd.DataFrame, feature_cols: list[str] = FEATURE_COLS, **kwargs):
     import lightgbm as lgb
 
+    # Regularização mais forte que o padrão do LightGBM: o dataset é
+    # pequeno (~300-400 município-anos por fold) e "ano" domina a
+    # importância das features (ver README) — sem isso o modelo overfita.
     parametros = {
-        "n_estimators": 300,
+        "n_estimators": 150,
         "learning_rate": 0.05,
-        "max_depth": 5,
-        "min_child_samples": 10,
+        "max_depth": 3,
+        "num_leaves": 15,
+        "min_child_samples": 30,
+        "reg_alpha": 1.0,
+        "reg_lambda": 1.0,
+        "subsample": 0.8,
+        "colsample_bytree": 0.8,
         "random_state": 0,
         "verbosity": -1,
         **kwargs,

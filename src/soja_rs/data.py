@@ -166,11 +166,31 @@ def collect_pam(
 IBGE_MALHAS_URL = "https://servicodados.ibge.gov.br/api/v3/malhas/estados"
 
 
+def _orientar_horario(geometry):
+    """Força anel externo em sentido horário.
+
+    O GeoJSON do IBGE segue a RFC 7946 (anel externo anti-horário), mas o
+    renderizador de mapas do Plotly espera sentido horário — com anti-horário
+    ele inverte o preenchimento (colore o entorno do polígono, não o
+    polígono). Idempotente: reaplicar num polígono já horário não muda nada.
+    """
+    from shapely.geometry import MultiPolygon
+    from shapely.geometry.polygon import orient
+
+    if geometry.geom_type == "Polygon":
+        return orient(geometry, sign=-1.0)
+    if geometry.geom_type == "MultiPolygon":
+        return MultiPolygon([orient(p, sign=-1.0) for p in geometry.geoms])
+    return geometry
+
+
 def collect_malha_centroides(uf: int = UF_RS, raw_dir: Path = RAW_DIR) -> pd.DataFrame:
     """Baixa a malha municipal do RS (um único request) e calcula centroides.
 
     Os centroides servem de ponto de consulta para a NASA POWER — cada
-    município vira um par (lon, lat).
+    município vira um par (lon, lat). O GeoJSON salvo em disco já sai com a
+    correção de sentido dos anéis (ver ``_orientar_horario``), pronto para o
+    app Streamlit consumir direto.
     """
     import geopandas as gpd
 
@@ -185,6 +205,9 @@ def collect_malha_centroides(uf: int = UF_RS, raw_dir: Path = RAW_DIR) -> pd.Dat
         geojson_path.write_bytes(response.content)
 
     gdf = gpd.read_file(geojson_path)
+    gdf["geometry"] = gdf["geometry"].apply(_orientar_horario)
+    gdf.to_file(geojson_path, driver="GeoJSON")
+
     # Centroide em CRS geográfico (graus) distorce; projeta para SIRGAS 2000 /
     # Brazil Polyconic (metros), calcula o centroide e volta para lon/lat.
     centroides = gdf.geometry.to_crs("EPSG:5880").centroid.to_crs("EPSG:4674")
